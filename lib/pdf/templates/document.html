@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{#
+  document.html — for structured long-form documents
+  Used by: AgentLegal (contracts, NDAs), AgentDocs (technical docs)
+
+  Expected context keys:
+    product         str   — "AgentLegal"
+    doc_title       str   — "Contrato de Servicios"
+    generated_for   str   — party name (optional)
+    generated_at    str   — formatted date string
+    parties         list  — [{role, name, id_or_email}]  (optional)
+    preamble        str   — introductory paragraph (optional)
+    clauses         list  — [{number?, title, body, subitems?}]
+    signature_block bool  — whether to render signature lines (default true)
+    notices         list  — [{type: 'warning'|'danger'|'', text}]  (optional)
+#}
+
+{% block header_icon %}📄{% endblock %}
+
+{% block content %}
+
+  <!-- Preamble -->
+  {% if preamble %}
+  <div class="section">
+    <p>{{ preamble }}</p>
+  </div>
+  {% endif %}
+
+  <!-- Parties (optional) -->
+  {% if parties %}
+  <div class="section">
+    <div class="section-title">Las Partes</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Rol</th>
+          <th>Nombre / Razón Social</th>
+          <th>Identificación</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for party in parties %}
+        <tr>
+          <td><strong>{{ party.role }}</strong></td>
+          <td>{{ party.name }}</td>
+          <td>{{ party.id_or_email | default('—') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Notices / callouts -->
+  {% for notice in notices | default([]) %}
+  <div class="callout {{ notice.type | default('') }}" style="margin-top:12pt;">
+    {{ notice.text }}
+  </div>
+  {% endfor %}
+
+  <!-- Clauses -->
+  {% for clause in clauses | default([]) %}
+  <div class="section">
+    <h2>
+      {% if clause.number %}{{ clause.number }}. {% endif %}{{ clause.title }}
+    </h2>
+    <p>{{ clause.body }}</p>
+
+    {% if clause.subitems %}
+    <ul>
+      {% for item in clause.subitems %}
+      <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <!-- Signature block -->
+  {% if signature_block is not defined or signature_block %}
+  <div class="section" style="margin-top:32pt; page-break-inside:avoid;">
+    <div class="section-title">Firmas</div>
+    <table style="margin-top:16pt;">
+      <tbody>
+        <tr>
+          {% for party in parties | default([{'role':'Parte A'}, {'role':'Parte B'}]) %}
+          <td style="width:50%; padding:0 12pt 0 0; vertical-align:bottom;">
+            <div style="border-top:1pt solid #334155; padding-top:6pt; margin-top:36pt;">
+              <strong>{{ party.role }}</strong><br>
+              {{ party.name | default('') }}<br>
+              <span style="font-size:8pt; color:#94a3b8;">Fecha: _______________</span>
+            </div>
+          </td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+{% endblock %}

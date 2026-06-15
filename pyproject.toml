@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agent-core-infra"
+version = "0.1.0"
+description = "Shared infrastructure for the multi-agent umbrella platform"
+requires-python = ">=3.11"
+dependencies = [
+    "openai>=1.30.0",
+    "httpx>=0.27.0",
+    "boto3>=1.34.0",
+    "supabase>=2.4.0",
+    "langgraph>=0.1.0",
+    "langchain-openai>=0.1.0",
+    "pymupdf>=1.24.0",
+    "python-docx>=1.1.0",
+    "weasyprint>=62.0",
+    "jinja2>=3.1.0",
+    "pydantic>=2.7.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0", "pytest-asyncio>=0.23.0", "ruff>=0.4.0"]

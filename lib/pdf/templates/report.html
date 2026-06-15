@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{#
+  report.html — for analysis / scoring reports
+  Used by: AgentCV (insights PDF), AgentAudit, AgentSEO
+
+  Expected context keys:
+    product         str   — "AgentCV"
+    doc_title       str   — "Reporte de Análisis"
+    generated_for   str   — user name or email (optional)
+    generated_at    str   — formatted date string
+    score           int   — 0–100 main score (optional)
+    score_label     str   — "ATS Score", "Code Quality", etc. (optional)
+    summary         str   — 1-paragraph executive summary
+    sections        list  — [{title, content, items?, callout?}]
+    keywords_present list — optional tag lists
+    keywords_missing list — optional tag lists
+    recommendations list  — [{title, body}]
+#}
+
+{% block header_icon %}📊{% endblock %}
+
+{% block content %}
+
+  <!-- Score hero (optional) -->
+  {% if score is defined %}
+  <div class="section" style="display:flex; align-items:center; gap:20pt;">
+    <div>
+      {% set score_class = 'good' if score >= 70 else ('average' if score >= 40 else 'poor') %}
+      <span class="score-badge {{ score_class }}">{{ score }}</span>
+      <span class="score-label">{{ score_label | default('Score') }} / 100</span>
+    </div>
+    <div style="flex:1;">
+      <p>{{ summary }}</p>
+    </div>
+  </div>
+  {% else %}
+  <div class="section">
+    <p>{{ summary }}</p>
+  </div>
+  {% endif %}
+
+  <!-- Keyword tags (optional) -->
+  {% if keywords_present or keywords_missing %}
+  <div class="section">
+    <div class="section-title">Keywords</div>
+    {% if keywords_present %}
+    <p style="font-size:8.5pt; color:#64748b; margin-bottom:4pt;">Presentes</p>
+    <div class="tags">
+      {% for kw in keywords_present %}<span class="tag present">{{ kw }}</span>{% endfor %}
+    </div>
+    {% endif %}
+    {% if keywords_missing %}
+    <p style="font-size:8.5pt; color:#64748b; margin-top:8pt; margin-bottom:4pt;">Faltantes</p>
+    <div class="tags">
+      {% for kw in keywords_missing %}<span class="tag missing">{{ kw }}</span>{% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Dynamic sections -->
+  {% for section in sections | default([]) %}
+  <div class="section">
+    <div class="section-title">{{ section.title }}</div>
+
+    {% if section.content %}
+    <p>{{ section.content }}</p>
+    {% endif %}
+
+    {% if section.items %}
+    <ul>
+      {% for item in section.items %}<li>{{ item }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if section.callout %}
+    <div class="callout {{ section.callout.type | default('') }}">
+      {{ section.callout.text }}
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <!-- Recommendations -->
+  {% if recommendations %}
+  <div class="section">
+    <div class="section-title">Recomendaciones</div>
+    {% for rec in recommendations %}
+    <div style="margin-top:10pt;">
+      <strong>{{ loop.index }}. {{ rec.title }}</strong>
+      <p>{{ rec.body }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+{% endblock %}

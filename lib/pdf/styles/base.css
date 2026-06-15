@@ -1,0 +1,209 @@
+/* base.css — agent-core-infra PDF styles */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@page {
+  size: A4;
+  margin: 20mm 18mm 22mm 18mm;
+
+  @bottom-center {
+    content: counter(page) " / " counter(pages);
+    font-family: "Inter", sans-serif;
+    font-size: 8pt;
+    color: #94a3b8;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  font-size: 10pt;
+  line-height: 1.6;
+  color: #1e293b;
+  background: #ffffff;
+}
+
+/* ── Typography ─────────────────────────────────────────── */
+
+h1 { font-size: 20pt; font-weight: 700; color: #0f172a; }
+h2 { font-size: 14pt; font-weight: 600; color: #1e293b; margin-top: 16pt; }
+h3 { font-size: 11pt; font-weight: 600; color: #334155; margin-top: 12pt; }
+
+p  { margin-top: 6pt; }
+ul, ol { padding-left: 16pt; margin-top: 6pt; }
+li { margin-top: 3pt; }
+
+strong { font-weight: 600; }
+em     { font-style: italic; }
+
+/* ── Header band ─────────────────────────────────────────── */
+
+.pdf-header {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 18pt 24pt 14pt;
+  margin: -20mm -18mm 16pt;  /* bleed to page edge */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pdf-header .product-name {
+  font-size: 11pt;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+
+.pdf-header .doc-title {
+  font-size: 16pt;
+  font-weight: 700;
+  margin-top: 4pt;
+}
+
+.pdf-header .doc-meta {
+  font-size: 8pt;
+  opacity: 0.65;
+  margin-top: 2pt;
+}
+
+.pdf-header .header-logo {
+  font-size: 22pt;
+}
+
+/* ── Section separators ──────────────────────────────────── */
+
+.section {
+  margin-top: 14pt;
+  page-break-inside: avoid;
+}
+
+.section-title {
+  font-size: 10pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  border-bottom: 1pt solid #e2e8f0;
+  padding-bottom: 4pt;
+  margin-bottom: 8pt;
+}
+
+/* ── Score badge ─────────────────────────────────────────── */
+
+.score-badge {
+  display: inline-block;
+  padding: 6pt 14pt;
+  border-radius: 6pt;
+  font-size: 28pt;
+  font-weight: 700;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.score-badge.good    { background: #16a34a; }
+.score-badge.average { background: #d97706; }
+.score-badge.poor    { background: #dc2626; }
+
+.score-label {
+  font-size: 8pt;
+  color: #64748b;
+  margin-top: 3pt;
+  display: block;
+}
+
+/* ── Tag / pill lists ────────────────────────────────────── */
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5pt;
+  margin-top: 6pt;
+}
+
+.tag {
+  background: #f1f5f9;
+  border: 0.5pt solid #cbd5e1;
+  border-radius: 4pt;
+  padding: 2pt 7pt;
+  font-size: 8.5pt;
+  color: #334155;
+}
+
+.tag.missing {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #b91c1c;
+}
+
+.tag.present {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #15803d;
+}
+
+/* ── Callout boxes ───────────────────────────────────────── */
+
+.callout {
+  border-left: 3pt solid #6366f1;
+  background: #f8fafc;
+  padding: 8pt 12pt;
+  margin-top: 10pt;
+  border-radius: 0 4pt 4pt 0;
+}
+
+.callout.warning {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.callout.danger {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+/* ── Two-column layout ───────────────────────────────────── */
+
+.two-col {
+  column-count: 2;
+  column-gap: 16pt;
+}
+
+/* ── Table ───────────────────────────────────────────────── */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8pt;
+  font-size: 9pt;
+}
+
+th {
+  background: #f1f5f9;
+  font-weight: 600;
+  text-align: left;
+  padding: 5pt 8pt;
+  border-bottom: 1pt solid #cbd5e1;
+}
+
+td {
+  padding: 5pt 8pt;
+  border-bottom: 0.5pt solid #e2e8f0;
+  vertical-align: top;
+}
+
+/* ── Footer note ─────────────────────────────────────────── */
+
+.pdf-footer-note {
+  margin-top: 24pt;
+  padding-top: 8pt;
+  border-top: 0.5pt solid #e2e8f0;
+  font-size: 7.5pt;
+  color: #94a3b8;
+  text-align: center;
+}

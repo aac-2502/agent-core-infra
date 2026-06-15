@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}{{ product | default('Agent') }} — {{ doc_title | default('Documento') }}{% endblock %}</title>
+</head>
+<body>
+
+  <!-- Header band -->
+  <div class="pdf-header">
+    <div>
+      <div class="product-name">{{ product | default('Agent Platform') }}</div>
+      <div class="doc-title">{% block doc_title %}{{ doc_title | default('Documento') }}{% endblock %}</div>
+      <div class="doc-meta">
+        {% if generated_for %}Para: {{ generated_for }} · {% endif %}
+        Generado el {{ generated_at | default('hoy') }}
+      </div>
+    </div>
+    <div class="header-logo">{% block header_icon %}⚡{% endblock %}</div>
+  </div>
+
+  <!-- Main content -->
+  {% block content %}{% endblock %}
+
+  <!-- Footer note -->
+  <div class="pdf-footer-note">
+    Generado automáticamente por {{ product | default('Agent Platform') }} ·
+    Este documento expira en 48 horas · No compartir el enlace de descarga
+  </div>
+
+</body>
+</html>
