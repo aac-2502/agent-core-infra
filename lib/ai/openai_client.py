@@ -9,7 +9,13 @@ from collections import defaultdict
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 
-_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+_client: AsyncOpenAI | None = None
+
+def _get_client() -> AsyncOpenAI:
+    global _client
+    if _client is None:
+        _client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
+    return _client
 
 # Cost per 1M tokens (as of mid-2025, update as needed)
 _COSTS = {
@@ -44,7 +50,7 @@ async def complete(
 
     for attempt in range(retries):
         try:
-            resp = await _client.chat.completions.create(**kwargs)
+            resp = await _get_client().chat.completions.create(**kwargs)
             _log_cost(product, model, resp.usage)
             return resp.choices[0].message.content
         except Exception:
