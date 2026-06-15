@@ -2,7 +2,10 @@
 LemonSqueezy client — agent-core-infra
 Checkout link generation, webhook verification, subscription management.
 """
-import hashlib, hmac, json, os
+import hashlib
+import hmac
+import json
+import os
 import httpx
 
 LEMON_API_KEY  = os.getenv("LEMON_SQUEEZY_API_KEY", "")

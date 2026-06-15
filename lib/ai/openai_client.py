@@ -2,7 +2,8 @@
 OpenAI client — agent-core-infra
 Rate-limited client with per-product cost tracking.
 """
-import os, time, asyncio
+import asyncio
+import os
 from openai import AsyncOpenAI
 from collections import defaultdict
 
@@ -46,7 +47,7 @@ async def complete(
             resp = await _client.chat.completions.create(**kwargs)
             _log_cost(product, model, resp.usage)
             return resp.choices[0].message.content
-        except Exception as e:
+        except Exception:
             if attempt == retries - 1:
                 raise
             await asyncio.sleep(2 ** attempt)

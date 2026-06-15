@@ -36,12 +36,13 @@ async def trigger_sequence(
             await send_template(email, step["subject"], step["template"], context)
         else:
             # Store in Supabase — a cron job picks these up and sends at the right time
+            delay_hours = step["delay_hours"]
             await insert("email_queue", {
-                "email":         email,
-                "template":      step["template"],
-                "subject":       step["subject"],
-                "context":       context,
-                "product":       product,
-                "send_after":    f"NOW() + INTERVAL '{step["delay_hours"]} hours'",
-                "sent":          False,
+                "email":        email,
+                "template":     step["template"],
+                "subject":      step["subject"],
+                "context":      context,
+                "product":      product,
+                "send_after":   f"NOW() + INTERVAL '{delay_hours} hours'",
+                "sent":         False,
             })

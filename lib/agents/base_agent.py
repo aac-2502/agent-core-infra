@@ -3,7 +3,6 @@ Base agent class — agent-core-infra
 All product agents inherit from BaseAgent and implement run().
 """
 from abc import ABC, abstractmethod
-from typing import Any
 
 from .retry import with_retry
 
