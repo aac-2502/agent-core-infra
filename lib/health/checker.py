@@ -19,16 +19,15 @@ REQUIRED_ENV_VARS = [
     "OPENAI_API_KEY",
     "SUPABASE_URL",
     "SUPABASE_SERVICE_KEY",
-    "R2_ACCOUNT_ID",
-    "R2_ACCESS_KEY",
-    "R2_SECRET_KEY",
-    "R2_BUCKET",
     "RESEND_API_KEY",
     "EMAIL_FROM_DOMAIN",
     "LEMON_SQUEEZY_API_KEY",
     "LEMON_STORE_ID",
     "LEMON_WEBHOOK_SECRET",
 ]
+
+# Only required when STORAGE_PROVIDER=r2
+R2_ENV_VARS = ["R2_ACCOUNT_ID", "R2_ACCESS_KEY", "R2_SECRET_KEY", "R2_BUCKET"]
 
 
 def _timed(fn):
@@ -46,6 +45,8 @@ def _timed(fn):
 
 async def check_env() -> CheckResult:
     missing = [k for k in REQUIRED_ENV_VARS if not os.getenv(k)]
+    if os.getenv("STORAGE_PROVIDER", "supabase") == "r2":
+        missing += [k for k in R2_ENV_VARS if not os.getenv(k)]
     return {
         "ok": not missing,
         "missing": missing,
@@ -76,13 +77,19 @@ async def check_openai() -> dict:
 
 
 @_timed
-async def check_r2() -> dict:
-    from ..storage.r2_client import _get_client, R2_BUCKET
+async def check_storage() -> dict:
+    provider = os.getenv("STORAGE_PROVIDER", "supabase")
+    if provider == "supabase":
+        from ..storage.supabase_storage import _get_client, BUCKET
+        _get_client().storage.from_(BUCKET).list()
+        return {"ok": True, "error": None, "provider": "supabase"}
+    # r2
+    from ..storage.r2_client import _get_client as r2_client, R2_BUCKET
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(
-        None, lambda: _get_client().list_objects_v2(Bucket=R2_BUCKET, MaxKeys=1)
+        None, lambda: r2_client().list_objects_v2(Bucket=R2_BUCKET, MaxKeys=1)
     )
-    return {"ok": True, "error": None}
+    return {"ok": True, "error": None, "provider": "r2"}
 
 
 @_timed
@@ -116,7 +123,7 @@ async def run_all() -> dict:
         check_env(),
         check_supabase(),
         check_openai(),
-        check_r2(),
+        check_storage(),
         check_resend(),
         return_exceptions=True,
     )
@@ -129,7 +136,7 @@ async def run_all() -> dict:
     services = {
         "supabase": safe(service_results[0]),
         "openai":   safe(service_results[1]),
-        "r2":       safe(service_results[2]),
+        "storage":  safe(service_results[2]),
         "resend":   safe(service_results[3]),
     }
 
