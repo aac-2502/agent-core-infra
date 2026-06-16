@@ -16,7 +16,6 @@ class CheckResult(TypedDict):
 
 
 REQUIRED_ENV_VARS = [
-    "OPENAI_API_KEY",
     "SUPABASE_URL",
     "SUPABASE_SERVICE_KEY",
     "RESEND_API_KEY",
@@ -45,6 +44,10 @@ def _timed(fn):
 
 async def check_env() -> CheckResult:
     missing = [k for k in REQUIRED_ENV_VARS if not os.getenv(k)]
+    if os.getenv("AI_PROVIDER", "openai") == "gemini":
+        if not os.getenv("GEMINI_API_KEY"): missing.append("GEMINI_API_KEY")
+    else:
+        if not os.getenv("OPENAI_API_KEY"): missing.append("OPENAI_API_KEY")
     if os.getenv("STORAGE_PROVIDER", "supabase") == "r2":
         missing += [k for k in R2_ENV_VARS if not os.getenv(k)]
     return {
@@ -64,7 +67,19 @@ async def check_supabase() -> dict:
 
 
 @_timed
-async def check_openai() -> dict:
+async def check_ai() -> dict:
+    provider = os.getenv("AI_PROVIDER", "openai")
+    if provider == "gemini":
+        import httpx
+        key = os.getenv("GEMINI_API_KEY", "")
+        async with httpx.AsyncClient(timeout=8.0) as c:
+            r = await c.get(
+                "https://generativelanguage.googleapis.com/v1beta/models",
+                params={"key": key},
+            )
+            ok = r.status_code == 200
+            return {"ok": ok, "provider": "gemini", "error": None if ok else f"HTTP {r.status_code}"}
+    # openai
     import httpx
     key = os.getenv("OPENAI_API_KEY", "")
     async with httpx.AsyncClient(timeout=8.0) as c:
@@ -73,7 +88,7 @@ async def check_openai() -> dict:
             headers={"Authorization": f"Bearer {key}"},
         )
         ok = r.status_code == 200
-        return {"ok": ok, "error": None if ok else f"HTTP {r.status_code}"}
+        return {"ok": ok, "provider": "openai", "error": None if ok else f"HTTP {r.status_code}"}
 
 
 @_timed
@@ -122,7 +137,7 @@ async def run_all() -> dict:
     env, *service_results = await asyncio.gather(
         check_env(),
         check_supabase(),
-        check_openai(),
+        check_ai(),
         check_storage(),
         check_resend(),
         return_exceptions=True,
@@ -135,7 +150,7 @@ async def run_all() -> dict:
 
     services = {
         "supabase": safe(service_results[0]),
-        "openai":   safe(service_results[1]),
+        "ai":       safe(service_results[1]),
         "storage":  safe(service_results[2]),
         "resend":   safe(service_results[3]),
     }
