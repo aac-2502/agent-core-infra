@@ -45,9 +45,11 @@ def _timed(fn):
 async def check_env() -> CheckResult:
     missing = [k for k in REQUIRED_ENV_VARS if not os.getenv(k)]
     if os.getenv("AI_PROVIDER", "openai") == "gemini":
-        if not os.getenv("GEMINI_API_KEY"): missing.append("GEMINI_API_KEY")
+        if not os.getenv("GEMINI_API_KEY"):
+            missing.append("GEMINI_API_KEY")
     else:
-        if not os.getenv("OPENAI_API_KEY"): missing.append("OPENAI_API_KEY")
+        if not os.getenv("OPENAI_API_KEY"):
+            missing.append("OPENAI_API_KEY")
     if os.getenv("STORAGE_PROVIDER", "supabase") == "r2":
         missing += [k for k in R2_ENV_VARS if not os.getenv(k)]
     return {
