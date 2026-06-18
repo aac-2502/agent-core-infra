@@ -5,7 +5,7 @@ Set AI_PROVIDER=gemini + GEMINI_API_KEY to use Gemini for free.
 """
 import asyncio
 import os
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, RateLimitError
 from collections import defaultdict
 
 # ── Provider config ──────────────────────────────────────────────────────────
@@ -94,6 +94,10 @@ async def complete(
             resp = await _get_client().chat.completions.create(**kwargs)
             _log_cost(product, model, resp.usage)
             return resp.choices[0].message.content
+        except RateLimitError:
+            if attempt == retries - 1:
+                raise
+            await asyncio.sleep(15 * (attempt + 1))  # 15s, 30s, 45s — Gemini needs ~8s
         except Exception:
             if attempt == retries - 1:
                 raise
