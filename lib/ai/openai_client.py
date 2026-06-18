@@ -94,10 +94,14 @@ async def complete(
             resp = await _get_client().chat.completions.create(**kwargs)
             _log_cost(product, model, resp.usage)
             return resp.choices[0].message.content
-        except RateLimitError:
+        except RateLimitError as e:
             if attempt == retries - 1:
                 raise
-            await asyncio.sleep(15 * (attempt + 1))  # 15s, 30s, 45s — Gemini needs ~8s
+            # Parse retryDelay from Gemini error (e.g. "retryDelay: '57s'")
+            import re as _re
+            m = _re.search(r"retryDelay.*?'(\d+)s'", str(e))
+            wait = int(m.group(1)) + 5 if m else 65
+            await asyncio.sleep(wait)
         except Exception:
             if attempt == retries - 1:
                 raise
