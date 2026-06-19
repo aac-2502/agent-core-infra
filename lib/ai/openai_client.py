@@ -23,12 +23,19 @@ _PROVIDER_CONFIG = {
         "model_fast": "gemini-2.0-flash",
         "model_smart": "gemini-2.0-flash",
     },
+    "groq": {
+        "base_url": "https://api.groq.com/openai/v1",
+        "api_key_env": "GROQ_API_KEY",
+        "model_fast": "llama-3.3-70b-versatile",
+        "model_smart": "llama-3.3-70b-versatile",
+    },
 }
 
 _COSTS = {
     "gpt-4o":              {"input": 2.50,  "output": 10.00},
     "gpt-4o-mini":         {"input": 0.15,  "output": 0.60},
     "gemini-2.0-flash":    {"input": 0.00,  "output": 0.00},  # free tier
+    "llama-3.3-70b-versatile": {"input": 0.00, "output": 0.00},  # groq free tier
     "gemini-1.5-pro":      {"input": 1.25,  "output": 5.00},
     "gemini-1.5-flash":    {"input": 0.075, "output": 0.30},
 }
