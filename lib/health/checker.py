@@ -20,9 +20,6 @@ REQUIRED_ENV_VARS = [
     "SUPABASE_SERVICE_KEY",
     "RESEND_API_KEY",
     "EMAIL_FROM_DOMAIN",
-    "LEMON_SQUEEZY_API_KEY",
-    "LEMON_STORE_ID",
-    "LEMON_WEBHOOK_SECRET",
 ]
 
 # Only required when STORAGE_PROVIDER=r2
@@ -77,7 +74,7 @@ async def check_ai() -> dict:
         async with httpx.AsyncClient(timeout=8.0) as c:
             r = await c.get(
                 "https://generativelanguage.googleapis.com/v1beta/models",
-                params={"key": key},
+                headers={"x-goog-api-key": key},
             )
             ok = r.status_code == 200
             return {"ok": ok, "provider": "gemini", "error": None if ok else f"HTTP {r.status_code}"}
