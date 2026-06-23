@@ -43,7 +43,7 @@ jobs:
         run: |
           pip install pip-audit --quiet
           pip install -e ".[dev]" --quiet
-          pip-audit --strict
+          pip-audit --strict --skip-editable
 
       # SAST: solo high severity para no bloquear en falsos positivos
       - name: Bandit — Python SAST
