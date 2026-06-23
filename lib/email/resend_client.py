@@ -7,11 +7,16 @@ import httpx
 from pathlib import Path
 from string import Template
 
-RESEND_API_KEY  = os.getenv("RESEND_API_KEY", "")
-FROM_DOMAIN     = os.getenv("EMAIL_FROM_DOMAIN", "noreply@yourdomain.com")
-TEMPLATES_DIR   = Path(__file__).parent / "templates"
+FROM_DOMAIN   = os.getenv("EMAIL_FROM_DOMAIN", "noreply@yourdomain.com")
+TEMPLATES_DIR = Path(__file__).parent / "templates"
 
-_HEADERS = {"Authorization": f"Bearer {RESEND_API_KEY}", "Content-Type": "application/json"}
+
+def _resend_headers() -> dict:
+    """Resolve API key at call time so it's always read after env vars are injected."""
+    return {
+        "Authorization": f"Bearer {os.getenv('RESEND_API_KEY', '')}",
+        "Content-Type": "application/json",
+    }
 
 
 def _load_template(name: str, context: dict) -> str:
@@ -24,7 +29,7 @@ async def send_email(to: str, subject: str, html: str) -> dict:
     async with httpx.AsyncClient() as client:
         r = await client.post(
             "https://api.resend.com/emails",
-            headers=_HEADERS,
+            headers=_resend_headers(),
             json={"from": FROM_DOMAIN, "to": [to], "subject": subject, "html": html},
         )
         r.raise_for_status()
@@ -36,9 +41,11 @@ async def send_template(to: str, subject: str, template: str, context: dict) -> 
     return await send_email(to, subject, html)
 
 
-async def send_delivery(to: str, product: str, downloads: list[dict], extra: dict = {}) -> dict:
+async def send_delivery(to: str, product: str, downloads: list[dict], extra: dict | None = None) -> dict:
+    import html as _html
+    extra = extra or {}
     ctx = {"product": product, "downloads_html": "".join(
-        f'<a href="{d["url"]}" style="display:block;margin:8px 0;color:#C8963E">'
-        f'⬇ {d["name"]}</a>' for d in downloads
+        f'<a href="{_html.escape(d["url"])}" style="display:block;margin:8px 0;color:#C8963E">'
+        f'⬇ {_html.escape(d["name"])}</a>' for d in downloads
     ), **extra}
     return await send_template(to, f"Tu {product} está listo ↓", "delivery", ctx)
