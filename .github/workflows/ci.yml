@@ -42,8 +42,11 @@ jobs:
       - name: pip-audit — Python CVEs
         run: |
           pip install pip-audit --quiet
-          pip install -e ".[dev]" --quiet
-          pip-audit --skip-editable
+          # Venv limpio para auditar solo deps del proyecto, no packages del runner Ubuntu
+          python -m venv /tmp/audit-venv
+          /tmp/audit-venv/bin/pip install "." --quiet
+          /tmp/audit-venv/bin/pip freeze | grep -vi '^agent-core-infra' > /tmp/frozen.txt
+          pip-audit -r /tmp/frozen.txt
 
       # SAST: solo high severity para no bloquear en falsos positivos
       - name: Bandit — Python SAST
