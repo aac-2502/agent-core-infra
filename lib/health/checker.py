@@ -41,9 +41,13 @@ def _timed(fn):
 
 async def check_env() -> CheckResult:
     missing = [k for k in REQUIRED_ENV_VARS if not os.getenv(k)]
-    if os.getenv("AI_PROVIDER", "openai") == "gemini":
+    provider = os.getenv("AI_PROVIDER", "openai")
+    if provider == "gemini":
         if not os.getenv("GEMINI_API_KEY"):
             missing.append("GEMINI_API_KEY")
+    elif provider == "groq":
+        if not os.getenv("GROQ_API_KEY"):
+            missing.append("GROQ_API_KEY")
     else:
         if not os.getenv("OPENAI_API_KEY"):
             missing.append("OPENAI_API_KEY")
@@ -78,7 +82,17 @@ async def check_ai() -> dict:
             )
             ok = r.status_code == 200
             return {"ok": ok, "provider": "gemini", "error": None if ok else f"HTTP {r.status_code}"}
-    # openai
+    if provider == "groq":
+        import httpx
+        key = os.getenv("GROQ_API_KEY", "")
+        async with httpx.AsyncClient(timeout=8.0) as c:
+            r = await c.get(
+                "https://api.groq.com/openai/v1/models",
+                headers={"Authorization": f"Bearer {key}"},
+            )
+            ok = r.status_code == 200
+            return {"ok": ok, "provider": "groq", "error": None if ok else f"HTTP {r.status_code}"}
+    # openai (default)
     import httpx
     key = os.getenv("OPENAI_API_KEY", "")
     async with httpx.AsyncClient(timeout=8.0) as c:
@@ -127,8 +141,8 @@ async def run_all() -> dict:
         "env": CheckResult,    # env var presence
         "services": {
             "supabase": CheckResult,
-            "openai":   CheckResult,
-            "r2":       CheckResult,
+            "ai":       CheckResult,
+            "storage":  CheckResult,
             "resend":   CheckResult,
         }
     }
