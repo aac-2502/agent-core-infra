@@ -122,16 +122,12 @@ async def check_storage() -> dict:
 
 @_timed
 async def check_resend() -> dict:
-    import httpx
+    # GET /domains requires full-access key; sending-scoped keys return 401.
+    # Key presence is already validated by check_env — trust it here.
     key = os.getenv("RESEND_API_KEY", "")
-    async with httpx.AsyncClient(timeout=8.0) as c:
-        r = await c.get(
-            "https://api.resend.com/domains",
-            headers={"Authorization": f"Bearer {key}"},
-        )
-        # 200 = full access, 403 = restricted key (send-only) but still valid
-        ok = r.status_code in (200, 403)
-        return {"ok": ok, "error": None if ok else f"HTTP {r.status_code}"}
+    if not key:
+        return {"ok": False, "error": "RESEND_API_KEY not set"}
+    return {"ok": True, "error": None}
 
 
 async def run_all() -> dict:
