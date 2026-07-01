@@ -129,7 +129,8 @@ async def check_resend() -> dict:
             "https://api.resend.com/domains",
             headers={"Authorization": f"Bearer {key}"},
         )
-        ok = r.status_code == 200
+        # 200 = full access, 403 = restricted key (send-only) but still valid
+        ok = r.status_code in (200, 403)
         return {"ok": ok, "error": None if ok else f"HTTP {r.status_code}"}
 
 
