@@ -61,6 +61,7 @@ jobs:
           config: >-
             p/secrets
             p/python
+            .semgrep/security.yml
 
   # ── 3. Tests — SOLO en push, nunca en pull_request de forks ───────────────
   # Fix finding #14: los secrets de producción no se exponen en PRs externas.

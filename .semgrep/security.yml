@@ -1,0 +1,47 @@
+rules:
+  # Detecta el patrón if(secret){ verify() } — el bypass original
+  - id: webhook-secret-optional-check
+    languages: [python, typescript]
+    message: "Webhook secret check is optional — if secret is missing, verification is silently skipped"
+    severity: ERROR
+    patterns:
+      - pattern: |
+          if $SECRET:
+              ... hmac ...
+      - pattern-not: |
+          if not $SECRET:
+              raise ...
+
+  # Detecta os.getenv() a nivel módulo (fuera de funciones)
+  - id: module-level-secret
+    languages: [python]
+    message: "Secret resolved at module import time — will be empty if env var set after import"
+    severity: WARNING
+    pattern: |
+      $VAR = os.getenv($KEY, ...)
+    pattern-not-inside: |
+      def ...:
+          ...
+
+  # Detecta interpolación HTML sin escape
+  - id: html-fstring-no-escape
+    languages: [python]
+    message: "User-controlled value interpolated into HTML without html.escape()"
+    severity: ERROR
+    patterns:
+      - pattern: f"...<$TAG>{$VAR}</$TAG>..."
+      - pattern-not: f"...<$TAG>{html.escape($VAR)}</$TAG>..."
+
+  # Detecta select("*") con Supabase (devuelve todos los campos)
+  - id: supabase-select-star
+    languages: [python]
+    message: "select('*') returns all columns including sensitive fields — specify columns explicitly"
+    severity: WARNING
+    pattern: .select("*")
+
+  # Detecta string.Template sin escape de HTML (vulnerable a HTML injection en emails)
+  - id: string-template-no-html-escape
+    languages: [python]
+    message: "string.Template.safe_substitute does not HTML-escape values — use Jinja2 with autoescape"
+    severity: WARNING
+    pattern: Template($TEMPLATE).safe_substitute($CTX)
