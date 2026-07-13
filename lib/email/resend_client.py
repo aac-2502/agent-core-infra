@@ -48,4 +48,4 @@ async def send_delivery(to: str, product: str, downloads: list[dict], extra: dic
         for d in downloads
     )
     ctx = {"product": product, "downloads_html": links_html, **(extra or {})}
-    return await send_template(to, f"Tu {product} esta listo", "delivery", ctx)
+    return await send_template(to, f"Tu {product} está listo ↓", "delivery", ctx)
