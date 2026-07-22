@@ -1,8 +1,10 @@
 """
 Email sequence orchestration — agent-core-infra
 Sends the immediate email and stores scheduled ones in Supabase
-for a cron job to pick up (e.g. Supabase Edge Functions cron or Railway cron).
+for a cron job to pick up (see queue_worker.process_due_emails).
 """
+from datetime import datetime, timedelta, timezone
+
 from .resend_client import send_template
 from ..db.supabase_client import insert
 
@@ -35,14 +37,16 @@ async def trigger_sequence(
         if step["delay_hours"] == 0:
             await send_template(email, step["subject"], step["template"], context)
         else:
-            # Store in Supabase — a cron job picks these up and sends at the right time
-            delay_hours = step["delay_hours"]
+            # Store in Supabase — queue_worker.process_due_emails() picks these up.
+            # send_after must be a real timestamp: PostgREST inserts JSON values
+            # as-is, it does not evaluate SQL expressions like NOW() + INTERVAL.
+            send_after = datetime.now(timezone.utc) + timedelta(hours=step["delay_hours"])
             await insert("email_queue", {
                 "email":        email,
                 "template":     step["template"],
                 "subject":      step["subject"],
                 "context":      context,
                 "product":      product,
-                "send_after":   f"NOW() + INTERVAL '{delay_hours} hours'",
+                "send_after":   send_after.isoformat(),
                 "sent":         False,
             })

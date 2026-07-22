@@ -11,6 +11,14 @@ from string import Template
 FROM_DOMAIN   = os.getenv("EMAIL_FROM_DOMAIN", "noreply@yourdomain.com")
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
+# Shared across every product's templates — callers only need to pass
+# product-specific values (terms_url, privacy_url) that differ per domain.
+DEFAULT_CONTEXT = {
+    "promykon_url": "https://promykon.com",
+    "terms_url":    "",
+    "privacy_url":  "",
+}
+
 
 def _headers() -> dict:
     key = os.getenv("RESEND_API_KEY")
@@ -22,7 +30,7 @@ def _headers() -> dict:
 def _load_template(name: str, context: dict) -> str:
     path = TEMPLATES_DIR / f"{name}.html"
     raw = path.read_text()
-    return Template(raw).safe_substitute(context)
+    return Template(raw).safe_substitute({**DEFAULT_CONTEXT, **context})
 
 
 async def send_email(to: str, subject: str, html: str) -> dict:
